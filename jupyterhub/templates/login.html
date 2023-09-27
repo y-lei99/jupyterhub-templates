@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>登录</title>
+</head>
+<body>
+{% extends "page.html" %}
+{% if announcement_login is string %}
+{% set announcement = announcement_login %}
+{% endif %}
+
+{% block login_widget %}
+{% endblock %}
+
+{% block main %}
+
+{% block login %}
+<script>
+    $(document).ready(function () {
+        var whei = $(window).width()
+        $("html").css({fontSize: whei / 24});
+        $(window).resize(function () {
+            var whei = $(window).width();
+            $("html").css({fontSize: whei / 24})
+        });
+    });
+</script>
+<div class="main">
+    {% block login_container %}
+    {% if custom_html %}
+    {{ custom_html | safe }}
+    {% elif login_service %}
+    <div class="service-login">
+        <p id='insecure-login-warning' class='hidden'>
+            Warning: JupyterHub seems to be served over an unsecured HTTP connection.
+            We strongly recommend enabling HTTPS for JupyterHub.
+        </p>
+        <a role="button" class='btn btn-jupyter btn-lg' href='{{ authenticator_login_url | safe }}'>
+            Sign in with {{login_service}}
+        </a>
+    </div>
+    {% else %}
+    <div class="header">
+        <div class="header-center fl">
+            <div class="header-title">登录</div>
+            <div class="header-img"></div>
+        </div>
+        <div class="header-bottom fl"></div>
+    </div>
+    <div class="content">
+        <div class="content-left">
+        </div>
+        <form action="{{ authenticator_login_url | safe }}" method="post" role="form">
+            <div class="content-right">
+                <div class="right-infp">
+                    {% if login_error %}
+                    <p class="login_error">
+                        {{login_error}}
+                    </p>
+                    {% endif %}
+                    <input type="hidden" name="_xsrf" value="{{ xsrf }}"/>
+                    <div class="right-infp-name">
+                        <input
+                                id="username_input"
+                                type="text"
+                                placeholder="用户名"
+                                autocapitalize="off"
+                                autocorrect="off"
+                                autocomplete="username"
+                                name="username"
+                                val="{{username}}"
+                                tabindex="2"
+                                autofocus="autofocus"
+                        />
+                    </div>
+                    <div class="right-infp-name">
+                        <input placeholder="密码"
+                               type="password"
+                               autocomplete="current-password"
+                               name="password"
+                               id="password_input"
+                               tabindex="2"
+                        />
+                    </div>
+                    <div class="right-infp-btn">
+                        <input id="login_submit"
+                               type="submit"
+                               class='btn'
+                               value='登录'
+                               tabindex="3"
+                        />
+                    </div>
+                    {% block login_terms %}
+                    {% if login_term_url %}
+                    <div id="login_terms" class="login_terms">
+                        <input type="checkbox" id="login_terms_checkbox" name="login_terms_checkbox" required/>
+                        {% block login_terms_text %} {# allow overriding the text #}
+                        By logging into the platform you accept the <a href="{{ login_term_url }}">terms and
+                        conditions</a>.
+                        {% endblock login_terms_text %}
+                    </div>
+                    {% endif %}
+                    {% endblock login_terms %}
+                </div>
+            </div>
+        </form>
+        {% endif %}
+        {% endblock login_container %}
+    </div>
+    {% endblock login %}
+
+    {% endblock %}
+
+    {% block script %}
+    {{ super() }}
+</div>
+<script>
+    <!--if (window.location.protocol === "http:") {-->
+    <!--  // unhide http warning-->
+    <!--  var warning = document.getElementById('insecure-login-warning');-->
+    <!--  warning.className = warning.className.replace(/\bhidden\b/, '');-->
+    <!--}-->
+    // setup onSubmit feedback
+    $('form').submit((e) => {
+      var form = $(e.target);
+      form.find('.feedback-container>input').attr('disabled', true);
+      form.find('.feedback-container>*').toggleClass('hidden');
+      form.find('.feedback-widget>*').toggleClass('fa-pulse');
+    });
+</script>
+{% endblock %}
+</body>
+</html>
